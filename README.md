@@ -6,7 +6,7 @@ SharesMapper is a tool that allows an administrator following up ACL on shares t
 The solution contains three projects :
 - SMBSharesUtils : library to scan SMB shares
 - ReportGenerator : library to generate OpenXML report
-- SharesMapperCLI : exe to use previous libraries
+- SharesMapperCLI : exe to use previous libraries (should be defined as startup project)
 - NFSSharesUtils : TBD
 
 
