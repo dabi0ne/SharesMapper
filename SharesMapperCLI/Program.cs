@@ -43,6 +43,9 @@ namespace ShareMapperCLI
 
 			[Option('j', "joinTimeout", Default = 100, HelpText = "How much time in ms the join call will wait.")]
 			public int ThreadJoinTimeout { get; set; }
+
+			[Option('b', "blacklist", Default = "ADMIN$", HelpText = "List of comma separated shares names to not scan recursively (or file of shares list)" )]
+			public string BlackList { get; set; }
 		}
 
 		[Verb("scanSMB", HelpText = "Perform a SMB scan.")]
@@ -121,6 +124,15 @@ namespace ShareMapperCLI
 
 			Config.ThreadJoinTimeout = options.ThreadJoinTimeout;
 			Config.ThreadJoinMaxAttempts = (uint)options.ThreadJoinMaxAttempts;
+
+			if (options.BlackList.Contains(",") || !File.Exists(options.BlackList))
+			{
+				Config.SharesRecursiveScanBlackList = new List<string>(options.BlackList.Split(','));
+			}
+			else
+			{
+				Config.SharesRecursiveScanBlackList = new List<string>(File.ReadAllLines(options.BlackList));
+			}
 
 		}
 
