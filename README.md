@@ -12,7 +12,7 @@ The solution contains three projects :
 
 ##### Example:
 
-The first scan highlighted a DB_backup share wtih too permissive ACE :
+The first scan highlighted a DB_backup share with too permissive ACE :
 ```
 SharesMapperCLI.exe scanSMB --targetType cidr -t 192.168.3.0/24 -x lab_range -o lab_range
 ```
@@ -91,11 +91,21 @@ Note that the previous command will not discover new hosts. To add new hosts you
 In this verb, the parameter -r (--recursiveLevel) will affect only the new shares. The previous shares' subdirectories will be rescanned wither their recusrive level is greater than the config value or not.
 
 
+Perform a scan with a recursive level could lead to duplicate entries. The common example is when we scan C$ (C:\) share and ADMIN$ (C:\Windows).
+To avoid this double scan of same folder you can use th -b (--blacklist) switch to define a set of shares names to not scan recursively.
+```
+SharesMapperCLI.exe scanSMB -t localhost -d -x localhost -o localhost -r 1 -b "C$,ADMIN$"
+```
 
+You can also give it a file of shares list (one per line):
+
+```
+SharesMapperCLI.exe scanSMB -t localhost -d -x localhost -o localhost -r 1 -b .\ignore.txt
+```
 
 ## Using the DLLs
 
-If you want to intergrate the scanner to your project or use it in your PowerShell scripts, you can import the libraries of the projects.
+If you want to integrate the scanner to your project or use it in your PowerShell scripts, you can import the libraries of the projects.
 The following examples explain how to use them with PowerShell.
 
 
@@ -188,6 +198,12 @@ Setting recursive level to 1 :
 PS:> [SMBSharesUtils.Config]::RecursiveLevel = 1
 ```
 
+In addition to these parameters, the Config class exports a list of strings that contains shares names to not scan recursively :
+
+```
+[SMBSharesUtils.Config]::SharesRecursiveScanBlackList = "C$","ADMIN$"
+```
+
 ###### SMBSharesUtils call graph 
 
 ![03](images/03.png)
@@ -206,7 +222,7 @@ OverloadDefinitions
 static void GenerateSMBHostsReport(System.Collections.Generic.Dictionary[string,SMBSharesUtils.SMBHost] hosts, string filename)
 ```
 
-As stated above, you load a SID resolution file using the "--sid" swith. To load the file using Powershell, you have to use LoadSIDResolutionFile :
+As stated above, you load a SID resolution file using the "--sid" switch. To load the file using Powershell, you have to use LoadSIDResolutionFile :
 
 ```
 PS:> [ReportGenerator.XLSXReport]::LoadSIDResolutionFile
@@ -217,9 +233,7 @@ static bool LoadSIDResolutionFile(string filename)
 ```
 
 
-
-
-#### Aknoledgement 
+#### Acknowledgment 
 SharesMapper contains some snippet from other public projects :
 
 - Well known SIDs and right on ACE 
