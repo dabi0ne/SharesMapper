@@ -366,6 +366,28 @@ namespace SMBSharesUtils
 			return true;
 		}
 
+		public static bool TryResolveHostName(string hostname, out string ip)
+		{
+			ip = "";
+			try
+			{
+				IPHostEntry iPHostEntry = Dns.GetHostEntry(hostname);
+				if (iPHostEntry.AddressList.Where(addr => addr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).Count() > 0)
+				{
+					ip = iPHostEntry.AddressList.Where(addr => addr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).First().ToString();
+				}
+				else
+				{
+					ip = Dns.GetHostEntry(hostname).AddressList[0].ToString();
+				}
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+			return true;
+		}
+
 		/// <summary>
 		/// Scan host's SMB shares
 		/// </summary>
@@ -387,12 +409,11 @@ namespace SMBSharesUtils
 			}
 			catch (FormatException)
 			{
-				if ((Config.TryResolveHostName && !TryResolveHostName(hostname)))
+				if ((Config.TryResolveHostName && !TryResolveHostName(hostname, out result.ip)))
 				{
 					Console.WriteLine("[-][" + DateTime.Now.ToString() + "] Could not resolve " + hostname);
 					return result;
 				}
-				result.ip = "";
 			}
 
 			// Get target's shares
@@ -585,7 +606,7 @@ namespace SMBSharesUtils
 				}
 				catch (FormatException)
 				{
-					if ((resolveHostName && !TryResolveHostName(hostname)))
+					if ((resolveHostName && !TryResolveHostName(hostname, out ip)))
 					{
 						Console.WriteLine("[-][" + DateTime.Now.ToString() + "] Could not resolve " + hostname);
 					}
