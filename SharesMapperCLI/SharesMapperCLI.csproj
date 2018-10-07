@@ -107,9 +107,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NFSSharesUtils\NFSSharesUtils.csproj">
+      <Project>{dde60c32-4dc3-4407-a29a-e1045f2e33bd}</Project>
+      <Name>NFSSharesUtils</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ReportGenerator\ReportGenerator.csproj">
       <Project>{dd339a05-5719-4ce0-9850-71db94a143df}</Project>
       <Name>ReportGenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharesMapperUtils\SharesMapperUtils.csproj">
+      <Project>{d4da38c6-3396-4818-81a3-d9711ad4fb96}</Project>
+      <Name>SharesMapperUtils</Name>
     </ProjectReference>
     <ProjectReference Include="..\SMBSharesUtils\SMBSharesUtils.csproj">
       <Project>{e1faca62-ef5d-4ec3-8703-8d9a31063210}</Project>

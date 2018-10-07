@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMBSharesUtils", "SMBShares
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharesMapperCLI", "SharesMapperCLI\SharesMapperCLI.csproj", "{10AF7A40-B4E1-45C9-BD53-E5405B801941}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharesMapperUtils", "SharesMapperUtils\SharesMapperUtils.csproj", "{D4DA38C6-3396-4818-81A3-D9711AD4FB96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{10AF7A40-B4E1-45C9-BD53-E5405B801941}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10AF7A40-B4E1-45C9-BD53-E5405B801941}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10AF7A40-B4E1-45C9-BD53-E5405B801941}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4DA38C6-3396-4818-81A3-D9711AD4FB96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4DA38C6-3396-4818-81A3-D9711AD4FB96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4DA38C6-3396-4818-81A3-D9711AD4FB96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4DA38C6-3396-4818-81A3-D9711AD4FB96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

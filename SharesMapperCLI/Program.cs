@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SMBSharesUtils;
 using CommandLine;
 using System.IO;
+using System.Linq;
 
 namespace ShareMapperCLI
 {
@@ -52,10 +53,10 @@ namespace ShareMapperCLI
 		class SMBOptions : ScanCommonOptions
 		{
 
-			[Option('t', "target", Required = true, HelpText = "Target(s) to scan.")]
+			[Option('t', "target", Required = true, HelpText = "Targets to scan.")]
 			public string Target { get; set; }
 
-			[Option("targetType", Default = "host", HelpText = "Target type (host, host_list (comma separated), cidr, file).")]
+			[Option("targetType", Default = "hosts", HelpText = "Target type : hosts or file.")]
 			public string TargetType { get; set; }
 
 
@@ -143,19 +144,15 @@ namespace ShareMapperCLI
 			SetCommonOptions(options);
 			SetScanCommonOptions(options);
 
-			if (options.TargetType.ToLower() == "host")
-			{
-				hosts.Add(options.Target, SharesScanner.ScanHost(options.Target));
-			}
-			else if (options.TargetType.ToLower() == "host_list")
+			if (options.TargetType.ToLower() == "hosts")
 			{
 				if (options.MaxThreads > 1)
 				{
-					hosts = SharesScanner.MTScanHosts(options.Target.Split(','));
+					hosts = SharesScanner.MTScanHosts(SharesMapperUtils.AddrParser.ParseTargets(options.Target).ToArray());
 				}
 				else
 				{
-					hosts = SharesScanner.ScanHosts(options.Target.Split(','));
+					hosts = SharesScanner.ScanHosts(SharesMapperUtils.AddrParser.ParseTargets(options.Target).ToArray());
 				}
 			}
 			else if (options.TargetType.ToLower() == "file")
@@ -167,17 +164,6 @@ namespace ShareMapperCLI
 				else
 				{
 					hosts = SharesScanner.ScanHosts(options.Target);
-				}
-			}
-			else if (options.TargetType.ToLower() == "cidr")
-			{
-				if (options.MaxThreads > 1)
-				{
-					hosts = SharesScanner.MTScanCIDR(options.Target);
-				}
-				else
-				{
-					hosts = SharesScanner.ScanCIDR(options.Target);
 				}
 			}
 			else

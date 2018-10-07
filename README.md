@@ -14,7 +14,7 @@ The solution contains three projects :
 
 The first scan highlighted a DB_backup share with too permissive ACE :
 ```
-SharesMapperCLI.exe scanSMB --targetType cidr -t 192.168.3.0/24 -x lab_range -o lab_range
+SharesMapperCLI.exe scanSMB -t 192.168.3.0/24 -x lab_range -o lab_range
 ```
 ![01](images/01.png)
 
@@ -34,7 +34,7 @@ SharesMapperCLI.exe rescanSMB -i .\lab_range_SMBHosts.xml -x lab_range_scan_2 -o
 SharesMapper.exe offers the following verbs :
 
 ```
-C:\> SharesMapperCLI.exe --help
+SharesMapperCLI.exe --help
 
   scanSMB         Perform a SMB scan.
 
@@ -56,10 +56,25 @@ C:\> SharesMapperCLI.exe --help
 This perform a SMB scan based on the defined parameters. The following example scan multiple hosts using 2 threads :
 
 ```
-> SharesMapperCLI.exe scanSMB --targetType host_list --target 192.168.3.119,192.168.3,120,192.168.3.121 --recursiveLevel 2 --maxThreads 2 --debug --outData demo_scan --outReport demo_scan
+ SharesMapperCLI.exe scanSMB --target "192.168.3.119 192.168.3.120 192.168.3.121" --recursiveLevel 2 --maxThreads 2 --debug --outData demo_scan --outReport demo_scan
 ```
 
 To list all parameters for the "scanSMB" verb the "--help" switch on the "scanSMB" verb.
+
+
+###### Target specification
+
+The target swith accepts multiple targets separated by a sapce. On every target you can specify single host, IP, IP range or CIDR or both :
+
+```
+ SharesMapperCLI.exe scanSMB --target "192.168.15-20.0/24 192.168.30.0/24 filer.domain.local" --recursiveLevel 2 --maxThreads 2 --debug --outData demo_scan --outReport demo_scan
+```
+
+Target can also be a file of host names. In order to use a file, you have to change the target type using the targetType switch :
+```
+ SharesMapperCLI.exe scanSMB --targetType file --target .\hosts.txt --recursiveLevel 2 --maxThreads 2 --debug --outData demo_scan --outReport demo_scan
+```
+
 
 ##### reporter verb
 This verb allows the generation of a xlsx report based on a serialized scan result (-x|--outData switch).
