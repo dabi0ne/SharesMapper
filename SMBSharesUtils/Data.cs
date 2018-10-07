@@ -140,13 +140,21 @@ namespace SMBSharesUtils
 
 	public static class Data
 	{
+
+		public static void MergeScanResult(string scan1DataFile, string scan2DataFile, string outDataFile)
+		{
+			SMBSharesMapperSerializer.SerializeHosts(MergeScanResult(SMBSharesMapperSerializer.DeserializeHosts(scan1DataFile), SMBSharesMapperSerializer.DeserializeHosts(scan2DataFile)), outDataFile);
+		}
+
 		public static Dictionary<string,SMBHost> MergeScanResult(Dictionary<string, SMBHost> scan1, Dictionary<string, SMBHost> scan2)
 		{
 			string key = "";
-			bool InOrder = true;
+
+			Console.WriteLine("[*][" + DateTime.Now + "] Starting merge of " + scan2.Count + " hosts with " + scan1.Count + " hosts.");
+
 			foreach(KeyValuePair<string, SMBHost> host in scan2)
 			{
-
+				Console.WriteLine("[*][" + DateTime.Now + "] Merging " + host.Key + " shares");
 				key = (scan1.ContainsKey(host.Value.hostname) ? host.Value.hostname : null) ?? (scan1.ContainsKey(host.Value.ip) ? host.Value.ip : null);
 				
 				if (key != null)
@@ -185,7 +193,7 @@ namespace SMBSharesUtils
 				}
 
 			}
-
+			Console.WriteLine("[+][" + DateTime.Now + "] Merge done.");
 			return scan1;
 		}
 
