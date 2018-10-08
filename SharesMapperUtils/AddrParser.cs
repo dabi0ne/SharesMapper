@@ -54,7 +54,7 @@ namespace SharesMapperUtils
 			int IPCount = (int)Math.Pow(2, subnetMask);
 			uint uintIP = 0;
 
-			foreach (string address in ParseRange(IPCidr[0]))
+			foreach (string address in ParseRange(IPCidr[0], true))
 			{
 				uintIP = (uint)IPAddress.NetworkToHostOrder((int)IPAddress.Parse(address).Address);
 				uintIP = uintIP & ~((uint)Math.Pow(2, subnetMask) - 1);
@@ -62,7 +62,19 @@ namespace SharesMapperUtils
 				for (int i = 1; i <= IPCount; i++)
 				{
 					hostname = IPAddress.Parse(uintIP.ToString()).ToString();
-					if (!((uintIP & 0x000000FF) == 0x000000FF || (uintIP & 0x000000FF) == 0x00000000))
+					if (!
+						(
+							(uintIP & 0x000000FF) == 0x00000000 
+							||
+							(uintIP & 0x000000FF) == 0x000000FF
+							|| 
+							(uintIP & 0x0000FF00) == 0x0000FF00
+							||
+							(uintIP & 0x00FF0000) == 0x00FF0000
+							||
+							(uintIP & 0xFF000000) == 0xFF000000
+						)
+					)
 					{
 						result.Add(hostname);
 					}
@@ -73,7 +85,7 @@ namespace SharesMapperUtils
 			return result;
 		}
 
-		public static HashSet<string> ParseRange(string target)
+		public static HashSet<string> ParseRange(string target, bool cidr = false)
 		{
 			HashSet<string> result = new HashSet<string>();
 
@@ -88,7 +100,7 @@ namespace SharesMapperUtils
 
 			if (IPStart.Length != 4)
 			{
-				throw new Exception("IP format error.");
+				throw new Exception("IP format error : " + target);
 			}
 
 			for (int i = 0; i < IPStart.Length; i++)
@@ -97,7 +109,7 @@ namespace SharesMapperUtils
 				RangeCount = IPStrByte.Count(c => c == '-');
 				if (RangeCount > 1)
 				{
-					throw new Exception("Range syntax error : too many '-'.");
+					throw new Exception("Range syntax error : too many '-' on " + target);
 				}
 				else if (RangeCount == 1)
 				{
@@ -111,6 +123,8 @@ namespace SharesMapperUtils
 							(i != 3 && RStartByte >= 0)
 							||
 							(i == 3 && RStartByte > 0)
+							||
+							(cidr && REndByte >= 0)
 						)
 						&&
 						RStartByte < 255 && REndByte > 0 && REndByte < 255 && RStartByte <= REndByte
@@ -121,7 +135,7 @@ namespace SharesMapperUtils
 					}
 					else
 					{
-						throw new Exception("Invalid range.");
+						throw new Exception("Invalid range : " + target);
 					}
 
 				}
@@ -132,7 +146,9 @@ namespace SharesMapperUtils
 						(
 							(i != 3 && REndByte >= 0)
 							||
-							(i == 3 && REndByte > 0)
+							(i == 3 && REndByte > 0) 
+							|| 
+							(cidr && REndByte >= 0)
 						)
 						&& REndByte < 255
 					)
