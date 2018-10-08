@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Linq;
+using System.Collections.Specialized;
 
 namespace SMBSharesUtils
 {
@@ -68,12 +69,12 @@ namespace SMBSharesUtils
 		public Dictionary<string, Dictionary<string, string>> shareACL;
 
 		[DataMember]
-		public Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>> shareACLEvolution;
+		public SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>> shareACLEvolution;
 
 		public SMBShareACL()
 		{
 			this.discoveryDateTime = DateTime.UtcNow;
-			this.shareACLEvolution = new Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
+			this.shareACLEvolution = new SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
 		}
 
 		public SMBShareACL(HostShare share, Dictionary<string, Dictionary<string, string>> shareACL)
@@ -81,10 +82,10 @@ namespace SMBSharesUtils
 			this.discoveryDateTime = DateTime.UtcNow;
 			this.share = share;
 			this.shareACL = shareACL;
-			this.shareACLEvolution = new Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
+			this.shareACLEvolution = new SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
 		}
 
-		public SMBShareACL(HostShare share, Dictionary<string, Dictionary<string, string>> shareACL, Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>> ShareACLEvolution)
+		public SMBShareACL(HostShare share, Dictionary<string, Dictionary<string, string>> shareACL, SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>> ShareACLEvolution)
 		{
 			this.discoveryDateTime = DateTime.UtcNow;
 			this.share = share;
@@ -108,12 +109,12 @@ namespace SMBSharesUtils
 		[DataMember]
 		public Dictionary<string, Dictionary<string, string>> directoryACL;
 		[DataMember]
-		public Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>> directoryACLEvolution;
+		public SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>> directoryACLEvolution;
 
 		public SMBShareDirectoryACL()
 		{
 			this.discoveryDateTime = DateTime.UtcNow;
-			this.directoryACLEvolution = new Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
+			this.directoryACLEvolution = new SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
 		}
 
 		public SMBShareDirectoryACL(string shareDirectory, Dictionary<string, Dictionary<string, string>> directoryACL)
@@ -121,10 +122,10 @@ namespace SMBSharesUtils
 			this.discoveryDateTime = DateTime.UtcNow;
 			this.shareDirectory = shareDirectory;
 			this.directoryACL = directoryACL;
-			this.directoryACLEvolution = new Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
+			this.directoryACLEvolution = new SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>>();
 		}
 
-		public SMBShareDirectoryACL(string shareDirectory, Dictionary<string, Dictionary<string, string>> directoryACL, Dictionary<DateTime, Dictionary<string, Dictionary<string, string>>> DirectoryACLEvolution)
+		public SMBShareDirectoryACL(string shareDirectory, Dictionary<string, Dictionary<string, string>> directoryACL, SortedDictionary<DateTime, Dictionary<string, Dictionary<string, string>>> DirectoryACLEvolution)
 		{
 			this.discoveryDateTime = DateTime.UtcNow;
 			this.shareDirectory = shareDirectory;
@@ -149,7 +150,7 @@ namespace SMBSharesUtils
 		public static Dictionary<string,SMBHost> MergeScanResult(Dictionary<string, SMBHost> scan1, Dictionary<string, SMBHost> scan2)
 		{
 			string key = "";
-
+			
 			Console.WriteLine("[*][" + DateTime.Now + "] Starting merge of " + scan2.Count + " hosts with " + scan1.Count + " hosts.");
 
 			foreach(KeyValuePair<string, SMBHost> host in scan2)
@@ -171,9 +172,19 @@ namespace SMBSharesUtils
 
 					foreach (KeyValuePair<string, SMBScanResult> share in host.Value.hostSharesScanResult)
 					{
+						
 						if (scan1[key].hostSharesScanResult.ContainsKey(share.Key))
 						{
-							scan1[key].hostSharesScanResult[share.Key].shareACL.shareACLEvolution.Add(share.Value.shareACL.discoveryDateTime, share.Value.shareACL.shareACL);
+							if (scan1[key].hostSharesScanResult[share.Key].shareACL.discoveryDateTime > share.Value.shareACL.discoveryDateTime)
+							{
+								scan1[key].hostSharesScanResult[share.Key].shareACL.shareACLEvolution.Add(scan1[key].hostSharesScanResult[share.Key].shareACL.discoveryDateTime, scan1[key].hostSharesScanResult[share.Key].shareACL.shareACL);
+								scan1[key].hostSharesScanResult[share.Key].shareACL.shareACL = share.Value.shareACL.shareACL;
+								scan1[key].hostSharesScanResult[share.Key].shareACL.discoveryDateTime = share.Value.shareACL.discoveryDateTime;
+							}
+							else
+							{
+								scan1[key].hostSharesScanResult[share.Key].shareACL.shareACLEvolution.Add(share.Value.shareACL.discoveryDateTime, share.Value.shareACL.shareACL);
+							}
 							if (share.Value.shareACL.shareACLEvolution.Count > 0)
 							{
 								scan1[key].hostSharesScanResult[share.Key].shareACL.shareACLEvolution.Concat(share.Value.shareACL.shareACLEvolution);
@@ -203,7 +214,16 @@ namespace SMBSharesUtils
 			{
 				if (scan1.ContainsKey(scanDirectoryResult.Key))
 				{
-					scan1[scanDirectoryResult.Key].shareDirectoryACL.directoryACLEvolution.Add(scanDirectoryResult.Value.shareDirectoryACL.discoveryDateTime, scanDirectoryResult.Value.shareDirectoryACL.directoryACL);
+					if (scan1[scanDirectoryResult.Key].shareDirectoryACL.discoveryDateTime > scanDirectoryResult.Value.shareDirectoryACL.discoveryDateTime)
+					{
+						scan1[scanDirectoryResult.Key].shareDirectoryACL.directoryACLEvolution.Add(scan1[scanDirectoryResult.Key].shareDirectoryACL.discoveryDateTime, scan1[scanDirectoryResult.Key].shareDirectoryACL.directoryACL);
+						scan1[scanDirectoryResult.Key].shareDirectoryACL.directoryACL = scanDirectoryResult.Value.shareDirectoryACL.directoryACL;
+						scan1[scanDirectoryResult.Key].shareDirectoryACL.discoveryDateTime = scanDirectoryResult.Value.shareDirectoryACL.discoveryDateTime;
+					}
+					else
+					{
+						scan1[scanDirectoryResult.Key].shareDirectoryACL.directoryACLEvolution.Add(scanDirectoryResult.Value.shareDirectoryACL.discoveryDateTime, scanDirectoryResult.Value.shareDirectoryACL.directoryACL);
+					}
 
 					if (scanDirectoryResult.Value.shareDirectoryACL.directoryACLEvolution.Count > 0)
 					{
