@@ -16,7 +16,7 @@ namespace SMBSharesUtils
 		public static bool PrintACL = false;
 
 		public static bool TryResolveSID = true;
-		public static bool TryResolveHostName = false;
+		public static bool TryResolveHostName = true;
 		public static int RecursiveLevel = 0;
 
 		public static bool ScanForNewShares = true;
