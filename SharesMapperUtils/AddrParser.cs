@@ -51,15 +51,15 @@ namespace SharesMapperUtils
 			int subnetMask = 0;
 			Int32.TryParse(IPCidr[1], out subnetMask);
 			subnetMask = 32 - subnetMask;
-			int IPCount = (int)Math.Pow(2, subnetMask);
+			uint IPCount = (uint)(Math.Pow(2, subnetMask) - 1);
 			uint uintIP = 0;
 
 			foreach (string address in ParseRange(IPCidr[0], true))
 			{
 				uintIP = (uint)IPAddress.NetworkToHostOrder((int)IPAddress.Parse(address).Address);
-				uintIP = uintIP & ~((uint)Math.Pow(2, subnetMask) - 1);
+				uintIP = uintIP & ~((uint)(Math.Pow(2, subnetMask) - 1));
 
-				for (int i = 1; i <= IPCount; i++)
+				for (uint i = 1; i <= IPCount; i++)
 				{
 					hostname = IPAddress.Parse(uintIP.ToString()).ToString();
 					if (!
