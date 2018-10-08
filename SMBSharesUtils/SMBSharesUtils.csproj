@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="Data.cs" />
     <Compile Include="GetNetShare.cs" />
     <Compile Include="ShareACLUtils.cs" />
     <Compile Include="SharesScanner.cs" />

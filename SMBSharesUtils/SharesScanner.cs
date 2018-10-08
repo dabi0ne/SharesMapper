@@ -2,61 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Net;
 
 namespace SMBSharesUtils
 {
-	[Serializable]
-	public class SMBHost
-	{
-		[DataMember]
-		public string hostname;
-		[DataMember]
-		public string ip;
-		[DataMember]
-		public DateTime scanDateTime;
-		[DataMember]
-		public int scanRecursiveLevel;
-
-		[DataMember]
-		public Dictionary<string, SMBScanResult> hostSharesScanResult;
-
-		public SMBHost()
-		{
-			this.scanDateTime = DateTime.UtcNow;
-			this.hostSharesScanResult = new Dictionary<string, SMBScanResult>();
-		}
-	}
-
-	[Serializable]
-	public class SMBScanResult
-	{
-		[DataMember]
-		public SMBShareACL shareACL;
-		[DataMember]
-		public Dictionary<string,ScanDirectoryResult> shareSubDirectories;
-
-		public SMBScanResult()
-		{
-
-		}
-	}
-
-	[Serializable]
-	public class ScanDirectoryResult
-	{
-		[DataMember]
-		public SMBShareDirectoryACL shareDirectoryACL;
-		[DataMember]
-		public Dictionary<string,ScanDirectoryResult> shareDirectorySubDirectories;
-
-		public ScanDirectoryResult()
-		{
-
-		}
-	}
+	
 
 	public class SharesScanner
 	{

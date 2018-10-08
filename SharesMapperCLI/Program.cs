@@ -24,7 +24,7 @@ namespace ShareMapperCLI
 			[Option('r', "recursiveLevel", Default = 0, HelpText = "How deep the scan should go into shares.")]
 			public int RecursiveLevel { get; set; }
 
-			[Option("dns", Default = false, HelpText = "Perform a DNS resolution on host names before scan. If the resolution fails the target will not be scanned. (If the target is an IP address the resolution will not be performed)")]
+			[Option("dns", Default = true, HelpText = "Perform a DNS resolution on host names before scan. If the resolution fails the target will not be scanned. (If the target is an IP address the resolution will not be performed)")]
 			public bool ResolveHostname { get; set; }
 
 			[Option('o', "outReport", Default = "", HelpText = "The filename of the xlsx report.")]
@@ -110,6 +110,20 @@ namespace ShareMapperCLI
 
 			[Option('s', "sid", HelpText = "File that contains a list of comma separated SID,name that will be used during report generation to resolve SIDs.")]
 			public string SIDFile { get; set; }
+		}
+
+		[Verb("mergeSMB", HelpText = "Merge two scans data into one file.")]
+		class MergeSMBOptions : CommonOptions
+		{
+
+			[Option('i', "scan1", Required = true, HelpText = "Serialized result.")]
+			public string InputFile { get; set; }
+
+			[Option('m', "scan2", Required = true, HelpText = "Serialized result to merge to scan1.")]
+			public string InputFile2 { get; set; }
+
+			[Option('x', "outData", Required = true, HelpText = "File path to save the merge result.")]
+			public string OutFile { get; set; }
 		}
 
 		static void SetCommonOptions(CommonOptions options)
@@ -292,10 +306,16 @@ namespace ShareMapperCLI
 			return 0;
 		}
 
+		static int RunMergeSMBVerb(MergeSMBOptions options)
+		{
+			Data.MergeScanResult(options.InputFile, options.InputFile2, options.OutFile);
+			return 0;
+		}
+
 		static void Main(string[] args)
 		{
 
-			var result = Parser.Default.ParseArguments<SMBOptions, ReporterOptions, RescanSMBOptions, GetSMBSharesOptions, GetACLOptions>(args);
+			var result = Parser.Default.ParseArguments<SMBOptions, RescanSMBOptions, ReporterOptions, MergeSMBOptions, GetSMBSharesOptions, GetACLOptions>(args);
 
 			result.MapResult(
 				(SMBOptions opts) => RunscanSMBVerb(opts),
@@ -303,6 +323,7 @@ namespace ShareMapperCLI
 				(ReporterOptions opts) => RunReporterVerb(opts),
 				(GetSMBSharesOptions opts) => RunGetSMBSharesVerb(opts),
 				(GetACLOptions opts) => RunGetACLVerb(opts),
+				(MergeSMBOptions opts) => RunMergeSMBVerb(opts),
 				errs => 1
 			);
 		}

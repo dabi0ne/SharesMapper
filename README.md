@@ -28,7 +28,6 @@ SharesMapperCLI.exe rescanSMB -i .\lab_range_SMBHosts.xml -x lab_range_scan_2 -o
 
 
 
-
 ## Usage Examples
 ### Using the CLI
 SharesMapper.exe offers the following verbs :
@@ -64,7 +63,7 @@ To list all parameters for the "scanSMB" verb the "--help" switch on the "scanSM
 
 ###### Target specification
 
-The target swith accepts multiple targets separated by a sapce. On every target you can specify single host, IP, IP range or CIDR or both :
+The target switch accepts multiple targets separated by a space. On every target you can specify a single host, IP, IP range or CIDR or both :
 
 ```
  SharesMapperCLI.exe scanSMB --target "192.168.15-20.0/24 192.168.30.0/24 filer.domain.local" --recursiveLevel 2 --maxThreads 2 --debug --outData demo_scan --outReport demo_scan
@@ -103,7 +102,7 @@ SharesMapperCLI.exe rescanSMB -i lab_range_scan_SMBHosts.xml -x lab_range_scan_2
 
 Note that the previous command will not discover new hosts. To add new hosts you should use the -a (--appendhosts) or -f (--appendfile) switch.
 
-In this verb, the parameter -r (--recursiveLevel) will affect only the new shares. The previous shares' subdirectories will be rescanned wither their recusrive level is greater than the config value or not.
+In this verb, the parameter -r (--recursiveLevel) will affect only the new shares. The previous shares' subdirectories will be rescanned wither their recursive level is greater than the config value or not.
 
 
 Perform a scan with a recursive level could lead to duplicate entries. The common example is when we scan C$ (C:\) share and ADMIN$ (C:\Windows).

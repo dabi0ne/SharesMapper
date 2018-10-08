@@ -44,6 +44,11 @@ namespace ReportGenerator
 					//TODO : write host without shares
 				}
 			}
+			
+			worksheet.Range("E2", "E" + row.ToString()).AddConditionalFormat().WhenContains("New ACE").Fill.SetBackgroundColor(ClosedXML.Excel.XLColor.Green);
+			worksheet.Range("E2", "E" + row.ToString()).AddConditionalFormat().WhenContains("No change").Fill.SetBackgroundColor(ClosedXML.Excel.XLColor.Orange);
+			worksheet.Range("E2", "E" + row.ToString()).AddConditionalFormat().WhenContains("ACE Removed").Fill.SetBackgroundColor(ClosedXML.Excel.XLColor.Red);
+			worksheet.Range("E2", "E" + row.ToString()).AddConditionalFormat().WhenContains("No ACE").Fill.SetBackgroundColor(ClosedXML.Excel.XLColor.Gray);
 
 			workbook.SaveAs(filename + "_ShareScanResult.xlsx");
 		}
@@ -259,7 +264,7 @@ namespace ReportGenerator
 		/// <param name="row">Row number to start from</param>
 		/// <param name="lastScan">List of ACE_ID of the first scan</param>
 		/// <returns></returns>
-		static int InsertACLEvolution(ClosedXML.Excel.IXLWorksheet worksheet, string hostname, string shareName, string remark, int level, Dictionary<DateTime, Dictionary<string,Dictionary<string,string>>> ACLEvolution, int row, List<string> lastScan = null)
+		static int InsertACLEvolution(ClosedXML.Excel.IXLWorksheet worksheet, string hostname, string shareName, string remark, int level, SortedDictionary<DateTime, Dictionary<string,Dictionary<string,string>>> ACLEvolution, int row, List<string> lastScan = null)
 		{
 			int count = 1;
 			List<string> nextScan;
