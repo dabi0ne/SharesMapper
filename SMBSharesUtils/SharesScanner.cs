@@ -619,13 +619,19 @@ namespace SMBSharesUtils
 
 		static private bool IsRecursivelyScannable(HostShare hostShare)
 		{
-			return (
-					!(
-						hostShare.shareInfo.shi1_type == (UInt16)SHARE_TYPE.STYPE_PRINTQ ||
-						hostShare.shareInfo.shi1_type == (UInt16)SHARE_TYPE.STYPE_IPC ||
-						Config.SharesRecursiveScanBlackList.Contains(hostShare.shareInfo.shi1_netname)
-					)
-				   );
+
+			if (hostShare.shareInfo.shi1_type == (UInt16)SHARE_TYPE.STYPE_PRINTQ || hostShare.shareInfo.shi1_type == (UInt16)SHARE_TYPE.STYPE_IPC)
+			{
+				return false;
+			}
+
+			if (Config.SharesRecursiveScanBlackList.Contains(hostShare.shareInfo.shi1_netname))
+			{
+				return false;
+			}
+
+			return (Config.SharesScanWhiteList.Count > 0) ? Config.SharesScanWhiteList.Contains(hostShare.shareInfo.shi1_netname) : true;
+			
 		}
 	}
 }

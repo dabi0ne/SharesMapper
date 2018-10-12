@@ -29,6 +29,8 @@ namespace SMBSharesUtils
 		// List of shares names to not scan recursively 
 		public static List<string> SharesRecursiveScanBlackList = new List<string> { "ADMIN$" };
 
+		public static List<string> SharesScanWhiteList = new List<string>();
+
 		public static void ShowConfig()
 		{
 
