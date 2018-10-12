@@ -54,7 +54,7 @@ namespace SharesMapperUtils
 			int IPCount = (int)Math.Pow(2, subnetMask);
 			uint uintIP = 0;
 
-			foreach (string address in ParseRange(IPCidr[0]))
+			foreach (string address in ParseRange(IPCidr[0], true))
 			{
 				uintIP = (uint)IPAddress.NetworkToHostOrder((int)IPAddress.Parse(address).Address);
 				uintIP = uintIP & ~((uint)Math.Pow(2, subnetMask) - 1);
@@ -73,7 +73,7 @@ namespace SharesMapperUtils
 			return result;
 		}
 
-		public static HashSet<string> ParseRange(string target)
+		public static HashSet<string> ParseRange(string target, bool cidr = false)
 		{
 			HashSet<string> result = new HashSet<string>();
 
@@ -110,7 +110,7 @@ namespace SharesMapperUtils
 						(
 							(i != 3 && RStartByte >= 0)
 							||
-							(i == 3 && RStartByte > 0)
+							(i == 3 && (RStartByte > 0 || cidr))
 						)
 						&&
 						RStartByte < 255 && REndByte > 0 && REndByte < 255 && RStartByte <= REndByte
@@ -132,7 +132,7 @@ namespace SharesMapperUtils
 						(
 							(i != 3 && REndByte >= 0)
 							||
-							(i == 3 && REndByte > 0)
+							(i == 3 && (REndByte > 0 || cidr)) 
 						)
 						&& REndByte < 255
 					)
