@@ -341,9 +341,122 @@ namespace SMBSharesUtils
 			{
 				string[] shareDirectorySubDirectories = GetSubDirectories(shareDirectory);
 				Dictionary<string, ScanDirectoryResult> shareDirecotySubDirectoriesScanResult = new Dictionary<string, ScanDirectoryResult>();
-				foreach (string subDirectoy in shareDirectorySubDirectories)
+
+				int CurrentLevelMaxThreads = Config.DirScanMaxThreads / (((Config.RecursiveLevel - subRecusiveLevel) > 0) ? ((Config.RecursiveLevel - subRecusiveLevel) * 2) : 1);
+
+				if (Config.DirScanMaxThreads <= 1 || CurrentLevelMaxThreads <= 1)
 				{
-					shareDirecotySubDirectoriesScanResult.Add(subDirectoy.Split('\\').Last(), ScanShareDirectory(subDirectoy, subRecusiveLevel - 1));
+
+					foreach (string subDirectoy in shareDirectorySubDirectories)
+					{
+						shareDirecotySubDirectoriesScanResult.Add(subDirectoy.Split('\\').Last(), ScanShareDirectory(subDirectoy, subRecusiveLevel - 1));
+					}
+				}
+				else
+				{
+					Object resultLock = new Object();
+					List<Thread> threads = new List<Thread>();
+
+					int counter = 1;
+					IPAddress ip;
+					Queue<string> targets = new Queue<string>();
+					Dictionary<int, int> threadsTryJoinAttemps = new Dictionary<int, int>();
+					
+
+					void doScan(string TshareDirectory)
+					{
+						try
+						{
+							if (Config.Debug) { Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Starting thread for " + TshareDirectory); }
+							ScanDirectoryResult TscanResults =  ScanShareDirectory(TshareDirectory, subRecusiveLevel - 1);
+							lock (resultLock)
+							{
+								shareDirecotySubDirectoriesScanResult.Add(TshareDirectory.Split('\\').Last(), TscanResults);
+							}
+						}
+						catch (Exception e)
+						{
+							Console.WriteLine("[-][" + DateTime.Now.ToString() + "] Failed to scan " + TshareDirectory);
+							if (Config.Debug) { Console.WriteLine("[!][THEAD][Exception] " + e.Message); }
+						}
+						return;
+					}
+
+					bool TryJoinThread(Thread t)
+					{
+						try
+						{
+							bool joinResult = t.Join(Config.DirScanThreadJoinTimeout);
+							int threadJoinAttempts = 0;
+							if (!joinResult)
+							{
+								if (threadsTryJoinAttemps.TryGetValue(t.ManagedThreadId, out threadJoinAttempts))
+								{
+									if (threadJoinAttempts > Config.DirScanThreadJoinMaxAttempts)
+									{
+										if (Config.Debug) { Console.WriteLine("Thread " + t.ManagedThreadId.ToString() + " will be asked to abort"); }
+										t.Abort();
+										return true;
+									}
+									else
+									{
+										threadsTryJoinAttemps[t.ManagedThreadId] = threadJoinAttempts + 1;
+									}
+								}
+								else
+								{
+									if (Config.Debug) { Console.WriteLine("Creating new entry for the thread " + t.ManagedThreadId.ToString()); }
+									threadsTryJoinAttemps.Add(t.ManagedThreadId, 1);
+								}
+							}
+							return joinResult;
+						}
+						catch (Exception)
+						{
+							return false;
+						}
+					}
+
+					Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Starting mutli-threaded scan ...");
+					
+					foreach (string subDirectoy in shareDirectorySubDirectories)
+					{
+
+						if (Config.Debug) { Console.WriteLine("Scanning host number " + counter.ToString() + " (" + subDirectoy + ")"); }
+						
+						try
+						{
+							if (Config.Debug) { Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Scanning shares of " + subDirectoy); }
+							while (threads.Count >= Config.DirScanMaxThreads)
+							{
+								Console.Write("[*][" + DateTime.Now.ToString() + "] Running threads count : " + threads.Count.ToString() + "    \r");
+								if (Config.Debug) { Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Waiting for a place to create a new thread ..."); }
+								threads.RemoveAll(TryJoinThread);
+							}
+
+							targets.Enqueue(subDirectoy);
+							Thread thread = new Thread(() => doScan(targets.Dequeue()))
+							{
+								Name = subDirectoy,
+								IsBackground = true
+							};
+							threads.Add(thread);
+							thread.Start();
+						}
+						catch (Exception e)
+						{
+							if (Config.Debug) { Console.WriteLine("[-][" + DateTime.Now.ToString() + "] Error on scanning  " + subDirectoy + " : " + e.ToString()); }
+						}
+
+					}
+
+					Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Waiting for the remaining threads ...");
+					do
+					{
+						Console.Write("[*][" + DateTime.Now.ToString() + "] Remaining threads : " + threads.Count.ToString() + "    \r");
+						threads.RemoveAll(TryJoinThread);
+					} while (threads.Count > 0);
+
 				}
 				return new ScanDirectoryResult { shareDirectoryACL = ShareACLUtils.GetShareDirectoryACL(shareDirectory), shareDirectorySubDirectories = shareDirecotySubDirectoriesScanResult };
 			}
@@ -631,7 +744,6 @@ namespace SMBSharesUtils
 			}
 
 			return (Config.SharesScanWhiteList.Count > 0) ? Config.SharesScanWhiteList.Contains(hostShare.shareInfo.shi1_netname) : true;
-			
 		}
 	}
 }

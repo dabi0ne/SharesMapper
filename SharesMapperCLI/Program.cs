@@ -18,7 +18,31 @@ namespace ShareMapperCLI
 
 		}
 
-		class ScanCommonOptions : CommonOptions
+		class DirScanMTOptions : CommonOptions
+		{
+			[Option('C', "dirMaxThreads", Default = 1, HelpText = "How many concurrent threads will be launched during subdirectories scan.")]
+			public int DirScanMaxThreads { get; set; }
+
+			[Option('M', "dirMaxAttemps", Default = 20, HelpText = "How many tries to join a thread before killing a directory scan thread.")]
+			public int DirScanThreadJoinMaxAttempts { get; set; }
+
+			[Option('J', "dirJoinTimeout", Default = 100, HelpText = "How much time in ms the join call will wait a direcotry scan thread.")]
+			public int DirScanThreadJoinTimeout { get; set; }
+		}
+
+		class MTOptions : DirScanMTOptions
+		{
+			[Option('c', "maxThreads", Default = 1, HelpText = "How many concurrent threads will be launched to scan the hosts.")]
+			public int MaxThreads { get; set; }
+
+			[Option('m', "maxAttemps", Default = 20, HelpText = "How many tries to join a scanning host thread before killing it.")]
+			public int ThreadJoinMaxAttempts { get; set; }
+
+			[Option('j', "joinTimeout", Default = 100, HelpText = "How much time in ms the join call will wait a scanning host thread.")]
+			public int ThreadJoinTimeout { get; set; }
+		}
+
+		class ScanCommonOptions : MTOptions
 		{
 
 			[Option('r', "recursiveLevel", Default = 0, HelpText = "How deep the scan should go into shares.")]
@@ -36,16 +60,7 @@ namespace ShareMapperCLI
 			[Option('x', "outData", Required = true, HelpText = "File path to save the serialized result to be used for future scan.")]
 			public string OutData { get; set; }
 
-			[Option('c', "maxThreads", Default = 1, HelpText = "How many concurrent threads will be launched.")]
-			public int MaxThreads { get; set; }
-
-			[Option('m', "maxAttemps", Default = 20, HelpText = "How many tries to join a thread before killing.")]
-			public int ThreadJoinMaxAttempts { get; set; }
-
-			[Option('j', "joinTimeout", Default = 100, HelpText = "How much time in ms the join call will wait.")]
-			public int ThreadJoinTimeout { get; set; }
-
-			[Option('b', "blacklist", Default = "", Required = false, HelpText = "List of comma separated shares names to not scan recursively (or file of shares list)" )]
+			[Option('b', "blacklist", Default = "", Required = false, HelpText = "List of comma separated shares names to not scan recursively (or file of shares list)")]
 			public string BlackList { get; set; }
 
 			[Option('w', "whitelist", Default = "", Required = false, HelpText = "List of comma separated shares names to scan recursively (or file of shares list)")]
@@ -61,7 +76,6 @@ namespace ShareMapperCLI
 
 			[Option("targetType", Default = "hosts", HelpText = "Target type : hosts or file.")]
 			public string TargetType { get; set; }
-
 
 		}
 
@@ -93,7 +107,7 @@ namespace ShareMapperCLI
 		}
 
 		[Verb("scanSMBShareDir", HelpText = "Scan SMB share directories.")]
-		class ScanSMBShareDirOptions : CommonOptions
+		class ScanSMBShareDirOptions : DirScanMTOptions
 		{
 			[Option('t', "target", Required = true, HelpText = "Target to scan.")]
 			public string target { get; set; }
@@ -112,6 +126,7 @@ namespace ShareMapperCLI
 
 			[Option("dns", Default = true, HelpText = "Perform a DNS resolution on host names before scan. If the resolution fails the target will not be scanned. (If the target is an IP address the resolution will not be performed)")]
 			public bool ResolveHostname { get; set; }
+
 		}
 
 		[Verb("getACL", HelpText = "Get NTFS ACL.")]
@@ -159,12 +174,8 @@ namespace ShareMapperCLI
 
 		static void SetScanCommonOptions(ScanCommonOptions options)
 		{
-			Config.MaxThreads = (uint)options.MaxThreads;
 			Config.TryResolveHostName = options.ResolveHostname;
 			Config.RecursiveLevel = options.RecursiveLevel;
-
-			Config.ThreadJoinTimeout = options.ThreadJoinTimeout;
-			Config.ThreadJoinMaxAttempts = (uint)options.ThreadJoinMaxAttempts;
 
 			if (options.BlackList.Length == 0)
 			{
@@ -194,12 +205,29 @@ namespace ShareMapperCLI
 
 		}
 
+		static void SetMTOptions(MTOptions options)
+		{
+			Config.MaxThreads = options.MaxThreads;
+			Config.ThreadJoinTimeout = options.ThreadJoinTimeout;
+			Config.ThreadJoinMaxAttempts = options.ThreadJoinMaxAttempts;
+
+		}
+
+		static void SetDirScanMTOptions(DirScanMTOptions options)
+		{
+			Config.DirScanMaxThreads = options.DirScanMaxThreads;
+			Config.DirScanThreadJoinTimeout = options.DirScanThreadJoinTimeout;
+			Config.DirScanThreadJoinMaxAttempts = options.DirScanThreadJoinMaxAttempts;
+		}
+
 		static int RunscanSMBVerb(SMBOptions options)
 		{
 
 			Dictionary<string, SMBHost> hosts = new Dictionary<string, SMBHost>();
 			SetCommonOptions(options);
 			SetScanCommonOptions(options);
+			SetMTOptions(options);
+			SetDirScanMTOptions(options);
 
 			if (options.TargetType.ToLower() == "hosts")
 			{
@@ -246,8 +274,11 @@ namespace ShareMapperCLI
 		static int RunRescanSMBVerb(RescanSMBOptions options)
 		{
 			Dictionary<string, SMBHost> hosts;
+
 			SetCommonOptions(options);
 			SetScanCommonOptions(options);
+			SetMTOptions(options);
+			SetDirScanMTOptions(options);
 
 			Config.ScanForNewShares = options.ScanForNewShares;
 			Config.ScanForNewSharesRecusiveLevel = options.RecursiveLevel;
@@ -343,6 +374,7 @@ namespace ShareMapperCLI
 		{
 
 			SetCommonOptions(options);
+			SetDirScanMTOptions(options);
 
 			Config.TryResolveHostName = options.ResolveHostname;
 			Config.RecursiveLevel = options.RecursiveLevel;
@@ -350,15 +382,15 @@ namespace ShareMapperCLI
 
 			List<ScanDirectoryResult> result = new List<ScanDirectoryResult>();
 
-			foreach(string hostname in SharesMapperUtils.AddrParser.ParseTargets(options.target))
+			foreach (string hostname in SharesMapperUtils.AddrParser.ParseTargets(options.target))
 			{
-				
+
 				if (Config.TryResolveHostName && !SharesScanner.TryResolveHostName(hostname))
 				{
 					Console.WriteLine("[-][" + DateTime.Now + "] Could not resolve " + hostname);
 					continue;
 				}
-				result.Add( SharesScanner.ScanShareDirectory("\\\\" + hostname + "\\" + options.Path, Config.RecursiveLevel));
+				result.Add(SharesScanner.ScanShareDirectory("\\\\" + hostname + "\\" + options.Path, Config.RecursiveLevel));
 			}
 
 			if (options.OutReport.Length > 0)
@@ -393,7 +425,7 @@ namespace ShareMapperCLI
 		static void Main(string[] args)
 		{
 
-			var result = Parser.Default.ParseArguments<SMBOptions, RescanSMBOptions, ReporterOptions, MergeSMBOptions, GetSMBSharesOptions, ScanSMBShareDirOptions, GetACLOptions >(args);
+			var result = Parser.Default.ParseArguments<SMBOptions, RescanSMBOptions, ReporterOptions, MergeSMBOptions, GetSMBSharesOptions, ScanSMBShareDirOptions, GetACLOptions>(args);
 
 			result.MapResult(
 				(SMBOptions opts) => RunscanSMBVerb(opts),
@@ -407,7 +439,7 @@ namespace ShareMapperCLI
 			);
 		}
 
-		
+
 
 	}
 }
