@@ -23,10 +23,10 @@ namespace ShareMapperCLI
 			[Option('C', "dirMaxThreads", Default = 1, HelpText = "How many concurrent threads will be launched during subdirectories scan.")]
 			public int DirScanMaxThreads { get; set; }
 
-			[Option('M', "dirMaxAttemps", Default = 20, HelpText = "How many tries to join a thread before killing a directory scan thread.")]
+			[Option('M', "dirMaxAttemps", Default = 0, HelpText = "How many tries to join a thread before killing a directory scan thread.")]
 			public int DirScanThreadJoinMaxAttempts { get; set; }
 
-			[Option('J', "dirJoinTimeout", Default = 100, HelpText = "How much time in ms the join call will wait a direcotry scan thread.")]
+			[Option('J', "dirJoinTimeout", Default = 100, HelpText = "How much time in ms the join call will wait a directory scan thread.")]
 			public int DirScanThreadJoinTimeout { get; set; }
 		}
 
@@ -35,7 +35,7 @@ namespace ShareMapperCLI
 			[Option('c', "maxThreads", Default = 1, HelpText = "How many concurrent threads will be launched to scan the hosts.")]
 			public int MaxThreads { get; set; }
 
-			[Option('m', "maxAttemps", Default = 20, HelpText = "How many tries to join a scanning host thread before killing it.")]
+			[Option('m', "maxAttemps", Default = 0, HelpText = "How many tries to join a scanning host thread before killing it.")]
 			public int ThreadJoinMaxAttempts { get; set; }
 
 			[Option('j', "joinTimeout", Default = 100, HelpText = "How much time in ms the join call will wait a scanning host thread.")]
@@ -112,7 +112,7 @@ namespace ShareMapperCLI
 			[Option('t', "target", Required = true, HelpText = "Target to scan.")]
 			public string target { get; set; }
 
-			[Option('p', "path", Required = true, HelpText = "Share path (whithout host part, ex: C$\\Users\\user_1).")]
+			[Option('p', "path", Required = true, HelpText = "Share path (without host part, ex: C$\\Users\\user_1).")]
 			public string Path { get; set; }
 
 			[Option('r', "recursiveLevel", Default = 0, HelpText = "How deep the scan should go into the paths.")]

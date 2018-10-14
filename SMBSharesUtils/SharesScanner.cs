@@ -132,7 +132,7 @@ namespace SMBSharesUtils
 				{
 					bool joinResult = t.Join(Config.ThreadJoinTimeout);
 					int threadJoinAttempts = 0;
-					if (!joinResult)
+					if (!joinResult && Config.ThreadJoinMaxAttempts > 0)
 					{
 						if (threadsTryJoinAttemps.TryGetValue(t.ManagedThreadId, out threadJoinAttempts))
 						{
@@ -149,7 +149,6 @@ namespace SMBSharesUtils
 						}
 						else
 						{
-							if (Config.Debug) { Console.WriteLine("Creating new entry for the thread " + t.ManagedThreadId.ToString()); }
 							threadsTryJoinAttemps.Add(t.ManagedThreadId, 1);
 						}
 					}
@@ -357,8 +356,6 @@ namespace SMBSharesUtils
 					Object resultLock = new Object();
 					List<Thread> threads = new List<Thread>();
 
-					int counter = 1;
-					IPAddress ip;
 					Queue<string> targets = new Queue<string>();
 					Dictionary<int, int> threadsTryJoinAttemps = new Dictionary<int, int>();
 					
@@ -388,7 +385,7 @@ namespace SMBSharesUtils
 						{
 							bool joinResult = t.Join(Config.DirScanThreadJoinTimeout);
 							int threadJoinAttempts = 0;
-							if (!joinResult)
+							if (!joinResult && Config.DirScanThreadJoinMaxAttempts > 0)
 							{
 								if (threadsTryJoinAttemps.TryGetValue(t.ManagedThreadId, out threadJoinAttempts))
 								{
@@ -405,7 +402,6 @@ namespace SMBSharesUtils
 								}
 								else
 								{
-									if (Config.Debug) { Console.WriteLine("Creating new entry for the thread " + t.ManagedThreadId.ToString()); }
 									threadsTryJoinAttemps.Add(t.ManagedThreadId, 1);
 								}
 							}
@@ -422,12 +418,12 @@ namespace SMBSharesUtils
 					foreach (string subDirectoy in shareDirectorySubDirectories)
 					{
 
-						if (Config.Debug) { Console.WriteLine("Scanning host number " + counter.ToString() + " (" + subDirectoy + ")"); }
+						
 						
 						try
 						{
-							if (Config.Debug) { Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Scanning shares of " + subDirectoy); }
-							while (threads.Count >= Config.DirScanMaxThreads)
+							if (Config.Debug) { Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Scanning " + subDirectoy); }
+							while (threads.Count >= CurrentLevelMaxThreads)
 							{
 								Console.Write("[*][" + DateTime.Now.ToString() + "] Running threads count : " + threads.Count.ToString() + "    \r");
 								if (Config.Debug) { Console.WriteLine("[*][" + DateTime.Now.ToString() + "] Waiting for a place to create a new thread ..."); }
@@ -491,7 +487,7 @@ namespace SMBSharesUtils
 				{
 					bool joinResult = t.Join(Config.ThreadJoinTimeout);
 					int threadJoinAttempts = 0;
-					if (!joinResult)
+					if (!joinResult && Config.ThreadJoinMaxAttempts > 0)
 					{
 						if (threadsTryJoinAttemps.TryGetValue(t.ManagedThreadId, out threadJoinAttempts))
 						{
@@ -508,7 +504,6 @@ namespace SMBSharesUtils
 						}
 						else
 						{
-							if (Config.Debug) { Console.WriteLine("Creating new entry for the thread " + t.ManagedThreadId.ToString()); }
 							threadsTryJoinAttemps.Add(t.ManagedThreadId, 1);
 						}
 					}

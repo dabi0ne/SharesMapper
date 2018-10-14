@@ -24,12 +24,12 @@ namespace SMBSharesUtils
 		public static bool ScanForNewSharesTryResolveHostName = true;
 
 		public static int MaxThreads = 1;
-		public static int ThreadJoinMaxAttempts = 20;
-		public static int ThreadJoinTimeout = 100;
+		public static int ThreadJoinMaxAttempts = 0;
+		public static int ThreadJoinTimeout = 1000;
 
 		public static int DirScanMaxThreads = 1;
-		public static int DirScanThreadJoinMaxAttempts = 20;
-		public static int DirScanThreadJoinTimeout = 100;
+		public static int DirScanThreadJoinMaxAttempts = 0;
+		public static int DirScanThreadJoinTimeout = 1000;
 
 		// List of shares names to not scan recursively 
 		public static List<string> SharesRecursiveScanBlackList = new List<string>();
