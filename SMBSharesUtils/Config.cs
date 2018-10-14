@@ -11,7 +11,7 @@ namespace SMBSharesUtils
 	{
 		public static bool Debug = false;
 		
-		public static uint MaxThreads = 1;
+
 
 		public static bool PrintACL = false;
 
@@ -23,11 +23,18 @@ namespace SMBSharesUtils
 		public static int ScanForNewSharesRecusiveLevel = -1;
 		public static bool ScanForNewSharesTryResolveHostName = true;
 
-		public static uint ThreadJoinMaxAttempts = 20;
-		public static int ThreadJoinTimeout = 100;
+		public static int MaxThreads = 1;
+		public static int ThreadJoinMaxAttempts = 0;
+		public static int ThreadJoinTimeout = 1000;
+
+		public static int DirScanMaxThreads = 1;
+		public static int DirScanThreadJoinMaxAttempts = 0;
+		public static int DirScanThreadJoinTimeout = 1000;
 
 		// List of shares names to not scan recursively 
-		public static List<string> SharesRecursiveScanBlackList = new List<string> { "ADMIN$" };
+		public static List<string> SharesRecursiveScanBlackList = new List<string>();
+		// List of shares names to scan recursively 
+		public static List<string> SharesScanWhiteList = new List<string>();
 
 		public static void ShowConfig()
 		{

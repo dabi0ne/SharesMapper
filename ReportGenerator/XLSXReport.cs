@@ -90,7 +90,7 @@ namespace ReportGenerator
 		/// </summary>
 		/// <param name="scanDirectoryResult">Object returned by an ACL scan on a UNC path</param>
 		/// <param name="filename">The name to use for the report (filename_ShareScanResult.xls)</param>
-		public static void GenerateSMBDirectoryScanResultReport(ScanDirectoryResult scanDirectoryResult, string filename)
+		public static void GenerateSMBDirectoryScanResultReport(List<ScanDirectoryResult> scanDirectoryResults, string filename)
 		{
 			int row = 1;
 			int col = 1;
@@ -100,7 +100,10 @@ namespace ReportGenerator
 
 			row = WriteHeader(worksheet, row, col);
 
-			WriteShareDirectories(worksheet, new Dictionary<string, ScanDirectoryResult> { { scanDirectoryResult.shareDirectoryACL.shareDirectory, scanDirectoryResult } }, row);
+			foreach(ScanDirectoryResult scanDirectoryResult in scanDirectoryResults)
+			{
+				WriteShareDirectories(worksheet, new Dictionary<string, ScanDirectoryResult> { { scanDirectoryResult.shareDirectoryACL.shareDirectory, scanDirectoryResult } }, row);
+			}
 
 			workbook.SaveAs(filename + "_ShareDirectoryScan.xlsx");
 		}

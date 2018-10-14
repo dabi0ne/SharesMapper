@@ -35,20 +35,26 @@ SharesMapper.exe offers the following verbs :
 ```
 SharesMapperCLI.exe --help
 
-  scanSMB         Perform a SMB scan.
+  scanSMB            Perform a SMB scan.
 
-  reporter        Generate report of a previous scan.
+  rescanSMB          Perform a new scan on previous result.
 
-  rescanSMB       Perform a new scan on previous result.
+  reporter           Generate report of a previous scan.
 
-  getSMBShares    Preview SMB shares of host.
+  mergeSMB           Merge two scans data into one file.
 
-  getACL          Preview target ACL.
+  getSMBShares       Preview SMB shares of host.
 
-  help            Display more information on a specific command.
+  scanSMBShareDir    Scan SMB share directories.
 
-  version         Display version information.
+  getACL             Get NTFS ACL.
+
+  help               Display more information on a specific command.
+
+  version            Display version information.
 ```
+
+---
 
 ##### scanSMB verb
 
@@ -60,6 +66,7 @@ This perform a SMB scan based on the defined parameters. The following example s
 
 To list all parameters for the "scanSMB" verb the "--help" switch on the "scanSMB" verb.
 
+---
 
 ###### Target specification
 
@@ -73,7 +80,7 @@ Target can also be a file of host names. In order to use a file, you have to cha
 ```
  SharesMapperCLI.exe scanSMB --targetType file --target .\hosts.txt --recursiveLevel 2 --maxThreads 2 --debug --outData demo_scan --outReport demo_scan
 ```
-
+---
 
 ##### reporter verb
 This verb allows the generation of a xlsx report based on a serialized scan result (-x|--outData switch).
@@ -87,6 +94,8 @@ If you perform scan using a computer outside the domain (ex. using runas) the si
 ```
 SharesMapperCLI.exe reporter --scanType SMB -i lab_range_scan_SMBHosts.xml -o lab_range_report -s domaine_B_SID_resolve.txt
 ```
+
+---
 
 ##### rescanSMB verb
 This verb is used to perform a shares scan based on previous result. 
@@ -104,6 +113,7 @@ Note that the previous command will not discover new hosts. To add new hosts you
 
 In this verb, the parameter -r (--recursiveLevel) will affect only the new shares. The previous shares' subdirectories will be rescanned wither their recursive level is greater than the config value or not.
 
+---
 
 Perform a scan with a recursive level could lead to duplicate entries. The common example is when we scan C$ (C:\) share and ADMIN$ (C:\Windows).
 To avoid this double scan of same folder you can use th -b (--blacklist) switch to define a set of shares names to not scan recursively.
@@ -116,6 +126,40 @@ You can also give it a file of shares list (one per line):
 ```
 SharesMapperCLI.exe scanSMB -t localhost -d -x localhost -o localhost -r 1 -b .\ignore.txt
 ```
+
+Sometimes backlisting is too pain, so you can use the -w (--whitelist) switch. It expects the same input as the blacklist switch except that it allows defining a set of shares names to scan recursively.
+
+Order : The black list is more prior than the white list : if a share name is on both black and white list, it will not be scanned recursively.
+
+---
+
+##### Thread parameters
+
+There are two groups of thread parameters. The first one is for hosts scanning and allow to control how many threads will be used to scan targeted hosts.
+```
+  -c, --maxThreads        (Default: 1) How many concurrent threads will be launched to scan the hosts.
+
+  -m, --maxAttemps        (Default: 0) How many tries to join a scanning host thread before killing it.
+
+  -j, --joinTimeout       (Default: 100) How much time in ms the join call will wait a scanning host thread.
+
+```
+
+The second one is for host share directories scan.  So these parameters allow setting how many threads should be run to scan host's share subdirectories.
+
+```
+  -C, --dirMaxThreads     (Default: 1) How many concurrent threads will be launched during subdirectories scan.
+
+  -M, --dirMaxAttemps     (Default: 0) How many tries to join a thread before killing a directory scan thread.
+
+  -J, --dirJoinTimeout    (Default: 100) How much time in ms the join call will wait a directory scan thread.
+
+```
+These parameters are also applied to subdirectories scan, however, dirMaxThreads is divided by 2 every time we go deeper in a subdirectory.
+
+So for a scan with recursive level 3 and dirMaxThreads 10 we will have 100 (10 * 5 * 2) threads per host.
+
+---
 
 ## Using the DLLs
 
